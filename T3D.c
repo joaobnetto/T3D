@@ -1,13 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-struct mat4x1 {
-    double x, y, z, t;
-};
-
-struct mat4x4 {
-    double ** matriz;
-};
+#ifndef T3T_H
+#define T3D_H
 
 typedef struct mat4x1 Mat4x1;
 typedef struct mat4x4 Mat4x4;
@@ -42,14 +38,46 @@ Mat4x1 MatTransf(Mat4x1 * Obj, Mat4x1 P);
 /* Imprime as coordenadas de um objeto no arquivo de nome fName */
 void Imprime(Mat4x1 * Obj, char * fName);
 
+#endif
+
 int main() {
     return 0;
 }
 
-void Cria(Mat4x1 * Obj, char * fName) {}
+struct mat4x1 {
+    double x, y, z, t;
+};
+
+struct mat4x4 {
+    double matriz[4][4];
+};
+void Cria(Mat4x1 * Obj, char * fName) {
+    int quantidade;
+    FILE * arquivo = fopen(fName, "r");
+    if(arquivo == NULL) exit(1);
+    fscanf(arquivo, "%d", &quantidade);
+    Obj = (Mat4x1 *) malloc(sizeof(Mat4x1) * quantidade);
+}
 Mat4x4 Trans(Mat4x4 M, double deltaX, double deltaY, double deltaZ) {}
 Mat4x4 Escala(Mat4x4 M, double FX, double FY, double FZ) {}
 Mat4x4 Rot(Mat4x4 M, int eixo, double angulo) {}
-Mat4x4 MatComp(Mat4x4 M1, Mat4x4 M2) {}
+
+
+Mat4x4 MatComp(Mat4x4 M1, Mat4x4 M2) {
+    Mat4x4 MF;
+    int i, j, k;
+    for(i = 0; i < 4; i++) {
+        for(j = 0; j < 4; j++) {
+            MF.matriz[i][j] = 0;
+            for(k = 0; k < 4; k++) {
+                MF.matriz[i][j] += M1.matriz[i][k] * M2.matriz[k][j];
+            }
+        }
+    }
+    return MF;
+
+}
+
+
 Mat4x1 MatTransf(Mat4x1 * Obj, Mat4x1 P) {}
 void Imprime(Mat4x1 * Obj, char * fName) {}
