@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #ifndef T3T_H
 #define T3D_H
+#define to_degrees(angulo) (angulo*M_PI) / 180.0 
 
 struct mat4x1 {
     // respectivamente x, y, z, t
@@ -54,34 +56,85 @@ FILE * pula_coordenadas(char * file_name);
 #endif
 
 int main() {
-    char nome_arquivo_entrada[] = "entrada.txt";
-    char nome_arquivo_saida[] = "saida.txt";
-    char comando;
+    char nome_arquivo_entrada[] = "entrada.txt", nome_arquivo_saida[] = "saida.txt", comando, eixo, op;
+  	double graus, x, y, z;
     FILE * arquivo_entrada, * arquivo_saida;
     Mat4x1 * coordenadas = NULL;
+  	Mat4x4 M;
     coordenadas = cria_lista();
     Cria(coordenadas, nome_arquivo_entrada);
     arquivo_entrada = pula_coordenadas(nome_arquivo_entrada);
-    while(feof(arquivo_entrada)) {
+    while(!feof(arquivo_entrada)) {
         fscanf(arquivo_entrada, " %c", &comando);
-        if(comando == 'T') {}
-        else if (comando == 'R') {}
-        else if (comando == 'S') {}
+     	if(comando == 'T') {
+      		fscanf(arquivo_entrada, "%lf %lf %lf", &x, &y, &z);
+          	Trans(M, x, y, z);
+    	}
+        else if (comando == 'R') {
+        	fscanf(arquivo_entrada, " %c %lf", &eixo, &graus);
+          	Rot(M, eixo, graus);
+        }
+        else if (comando == 'S') {
+            fscanf(arquivo_entrada, "%lf %lf %lf", &x, &y, &z);
+          	Escala(M, x, y, z);
+        }
     }
 
     return 0;
 }
 
 void Cria(Mat4x1 * Obj, char * fName) {
-    int quantidade;
-    FILE * arquivo = fopen(fName, "r");
-    if(arquivo == NULL) exit(1);
-    fscanf(arquivo, "%d", &quantidade);
-    Obj = (Mat4x1 *) malloc(sizeof(Mat4x1) * quantidade);
+  	
 }
-Mat4x4 Trans(Mat4x4 M, double deltaX, double deltaY, double deltaZ) {}
-Mat4x4 Escala(Mat4x4 M, double FX, double FY, double FZ) {}
-Mat4x4 Rot(Mat4x4 M, int eixo, double angulo) {}
+
+Mat4x4 Trans(Mat4x4 M, double deltaX, double deltaY, double deltaZ) {
+  	// memset: O(n)
+	Mat4x4 tmp;
+  	memset(tmp.matriz, 0, sizeof(tmp.matriz));
+  	tmp.matriz[0][0] = tmp.matriz[1][1] = tmp.matriz[2][2] = tmp.matriz[3][3] = 1;
+  	tmp.matriz[0][3] = deltaX;
+  	tmp.matriz[1][3] = deltaY;
+  	tmp.matriz[2][3] = deltaZ;
+  	tmp = MatComp(M, tmp);
+  	return tmp;
+    
+}
+Mat4x4 Escala(Mat4x4 M, double FX, double FY, double FZ) {
+	// memset: O(n)
+	Mat4x4 tmp;
+  	memset(tmp.matriz, 0, sizeof(tmp.matriz));
+  	tmp.matriz[0][0] = FX;
+  	tmp.matriz[1][1] = FY;
+  	tmp.matriz[2][2] = FZ;
+  	tmp.matriz[3][3] = 1;
+  	tmp = MatComp(M, tmp);
+  	return tmp;
+}
+Mat4x4 Rot(Mat4x4 M, char eixo, double angulo) {
+// 	double rad = (angulo * PI) / 180.0;
+  	Mat4x4 tmp;
+  	memset(tmp.matriz, 0, sizeof(tmp.matriz));
+  	if(eixo == 'x' || eixo == 'X'){
+          tmp.matriz[0][0] = tmp.matriz[3][3] = 1;
+          tmp.matriz[1][1] = tmp.matriz[2][2] = cos(to_degrees(angulo));
+          tmp.matriz[2][1] = tmp.matriz[1][2] = sin(to_degrees(angulo));
+          tmp.matriz[1][2] *= -1;
+    }
+  	else if(eixo == 'y' || eixo == 'Y'){
+          tmp.matriz[1][1] = tmp.matriz[3][3] = 1;
+          tmp.matriz[0][0] = tmp.matriz[2][2] = cos(to_degrees(angulo));
+          tmp.matriz[2][0] = tmp.matriz[0][2] = sin(to_degrees(angulo));
+          tmp.matriz[0][2] *= -1;
+  	}
+  	else{
+          tmp.matriz[2][2] = tmp.matriz[3][3] = 1;
+          tmp.matriz[0][0] = tmp.matriz[1][1] = cos(to_degrees(angulo));
+          tmp.matriz[0][1] = tmp.matriz[1][0] = sin(to_degrees(angulo));
+          tmp.matriz[0][1] *= -1;
+   }
+   tmp = MatComp(M, tmp);
+   return tmp;
+}
 
 
 Mat4x4 MatComp(Mat4x4 M1, Mat4x4 M2) {
@@ -100,7 +153,18 @@ Mat4x4 MatComp(Mat4x4 M1, Mat4x4 M2) {
 }
 
 
-Mat4x1 MatTransf(Mat4x1 * Obj, Mat4x1 P) {}
+Mat4x1 MatTransf(Mat4x1 M, Mat4x1 P) {
+  	
+  	int i, j;
+  	Mat4x1 temp;
+  	for(i = 0; i < 4; i++) {
+      	temp.coordenadas[i] = 0;
+      	for(j = 0; j < 4; j++) {
+          	temp.coordenadas[i] += M.coordenadas[j];
+        }
+    }
+	return temp;
+}
 void Imprime(Mat4x1 * Obj, char * fName) {}
 
 Mat4x1 * cria_lista(void) {
