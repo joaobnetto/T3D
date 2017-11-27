@@ -5,6 +5,15 @@
 #ifndef T3T_H
 #define T3D_H
 
+struct mat4x1 {
+    // respectivamente x, y, z, t
+    double coordenadas[4];
+    struct mat4x1 * next;
+};
+
+struct mat4x4 {
+    double matriz[4][4];
+};
 typedef struct mat4x1 Mat4x1;
 typedef struct mat4x4 Mat4x4;
 
@@ -38,19 +47,31 @@ Mat4x1 MatTransf(Mat4x1 * Obj, Mat4x1 P);
 /* Imprime as coordenadas de um objeto no arquivo de nome fName */
 void Imprime(Mat4x1 * Obj, char * fName);
 
+/* Cria cabeça da lista */
+Mat4x1 * cria_lista(void);
+
+FILE * pula_coordenadas(char * file_name);
 #endif
 
 int main() {
+    char nome_arquivo_entrada[] = "entrada.txt";
+    char nome_arquivo_saida[] = "saida.txt";
+    char comando;
+    FILE * arquivo_entrada, * arquivo_saida;
+    Mat4x1 * coordenadas = NULL;
+    coordenadas = cria_lista();
+    Cria(coordenadas, nome_arquivo_entrada);
+    arquivo_entrada = pula_coordenadas(nome_arquivo_entrada);
+    while(feof(arquivo_entrada)) {
+        fscanf(arquivo_entrada, " %c", &comando);
+        if(comando == 'T') {}
+        else if (comando == 'R') {}
+        else if (comando == 'S') {}
+    }
+
     return 0;
 }
 
-struct mat4x1 {
-    double x, y, z, t;
-};
-
-struct mat4x4 {
-    double matriz[4][4];
-};
 void Cria(Mat4x1 * Obj, char * fName) {
     int quantidade;
     FILE * arquivo = fopen(fName, "r");
@@ -81,3 +102,27 @@ Mat4x4 MatComp(Mat4x4 M1, Mat4x4 M2) {
 
 Mat4x1 MatTransf(Mat4x1 * Obj, Mat4x1 P) {}
 void Imprime(Mat4x1 * Obj, char * fName) {}
+
+Mat4x1 * cria_lista(void) {
+    Mat4x1 * temp;
+    temp = (Mat4x1 *) malloc(sizeof(Mat4x1));
+    if(temp == NULL) {
+        printf("Memory error\n");
+        exit(1);
+    }
+    temp->next = NULL;
+    return temp;
+}
+
+FILE * pula_coordenadas(char * file_name) {
+    int quantidade, total;
+    double lixo;
+    FILE * arquivo = fopen(file_name, "r");
+    fscanf(arquivo, " %d", &quantidade);
+    total = quantidade * 3;
+    while(total--) {
+        fscanf(arquivo, "%lf", &lixo);
+    }
+    return arquivo;
+
+}
