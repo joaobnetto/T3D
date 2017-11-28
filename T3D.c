@@ -61,6 +61,11 @@ void add_node(Mat4x1 * head, Mat4x1 dados);
 /* Retorna uma matriz identidade */
 Mat4x4 matriz_identidade(void);
 
+/* Retorna o tamanho de uma lista de objetos */
+int tamanho_lista(Mat4x1 * Obj);
+
+/* Realiza a multiplicação de matrizes em toda a lista de objetos */
+void realiza_tranformacao(Mat4x1 * Obj, Mat4x4 M);
 #endif
 
 int main() {
@@ -78,17 +83,19 @@ int main() {
         fscanf(arquivo_entrada, " %c", &comando);
         if(comando == 'T') {
             fscanf(arquivo_entrada, "%lf %lf %lf", &x, &y, &z);
-            Trans(M, x, y, z);
+            M = Trans(M, x, y, z);
         }
         else if (comando == 'R') {
             fscanf(arquivo_entrada, " %c %lf", &eixo, &graus);
-            Rot(M, eixo, graus);
+            M = Rot(M, eixo, graus);
         }
         else if (comando == 'S') {
             fscanf(arquivo_entrada, "%lf %lf %lf", &x, &y, &z);
-            Escala(M, x, y, z);
+            M = Escala(M, x, y, z);
         }
     }
+    fclose(arquivo_entrada);
+
 
     return 0;
 }
@@ -202,7 +209,20 @@ Mat4x1 MatTransf(Mat4x4 M, Mat4x1 P) {
     }
     return temp;
 }
-void Imprime(Mat4x1 * Obj, char * fName) {}
+void Imprime(Mat4x1 * Obj, char * fName) {
+    FILE * saida;
+    Mat4x1 * lista = Obj->next;
+    int quantidade_coordenadas = tamanho_lista(Obj);
+    saida = fopen(fName, "w");
+    fprintf(saida, "%d\n", quantidade_coordenadas);
+    while(quantidade_coordenadas) {
+        fprintf(saida, "%.3lf %.3lf %.3lf\n", lista->coordenadas[0],
+                                              lista->coordenadas[1],
+                                              lista->coordenadas[2]);
+        quantidade_coordenadas--;
+    }
+    fclose(saida);
+}
 
 Mat4x1 * cria_lista(void) {
     Mat4x1 * temp;
@@ -232,7 +252,7 @@ FILE * pula_coordenadas(char * file_name) {
 void add_node(Mat4x1 * head, Mat4x1 dados) {
     Mat4x1 * temp = head;
     if(head == NULL) {
-        printf("cabeça vazia");
+        printf("cabeça não inicializada");
         return;
     }
     while(temp->next != NULL) {
@@ -256,4 +276,30 @@ Mat4x4 matriz_identidade(void) {
         }
     }
     return M;
+}
+int tamanho_lista(Mat4x1 * Obj) {
+    int qtd = 0;
+    if(Obj == NULL) {
+        printf("Lista não inicializada");
+        exit(1);
+    }
+    Mat4x1 * lista = Obj->next;
+    while(lista != NULL) {
+        qtd++;
+        lista = lista->next;
+    }
+    return qtd;
+
+}
+void realiza_tranformacao(Mat4x1 * Obj, Mat4x4 M) {
+    Mat4x1 * lista = Obj->next;
+    Mat4x1 aux;
+    while(lista != NULL) {
+        aux = MatTransf(M, *lista);
+        lista->coordenadas[0] = aux.coordenadas[0];
+        lista->coordenadas[1] = aux.coordenadas[1];
+        lista->coordenadas[2] = aux.coordenadas[2];
+        lista->coordenadas[3] = aux.coordenadas[3];
+        lista = lista->next;
+    }
 }
