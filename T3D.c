@@ -72,15 +72,17 @@ int main() {
     char nome_arquivo_entrada[] = "entrada.txt";
     char nome_arquivo_saida[] = "saida.txt", comando, eixo, op;
     double graus, x, y, z;
+    int i = 0;
     FILE * arquivo_entrada, * arquivo_saida;
     Mat4x1 * coordenadas = NULL;
-    Mat4x4 M;
+    Mat4x4 M, tmp;
     M = matriz_identidade();
     coordenadas = cria_lista();
     Cria(coordenadas, nome_arquivo_entrada);
     arquivo_entrada = pula_coordenadas(nome_arquivo_entrada);
     while(!feof(arquivo_entrada)) {
-        fscanf(arquivo_entrada, " %c", &comando);
+        if(i == 3) break;
+         fscanf(arquivo_entrada, " %c", &comando);
         if(comando == 'T') {
             fscanf(arquivo_entrada, "%lf %lf %lf", &x, &y, &z);
             M = Trans(M, x, y, z);
@@ -93,9 +95,11 @@ int main() {
             fscanf(arquivo_entrada, "%lf %lf %lf", &x, &y, &z);
             M = Escala(M, x, y, z);
         }
+        printf("%c %i\n",comando, i++);
     }
     fclose(arquivo_entrada);
-
+    realiza_tranformacao(coordenadas, M);
+    Imprime(coordenadas, nome_arquivo_saida);
 
     return 0;
 }
@@ -219,6 +223,7 @@ void Imprime(Mat4x1 * Obj, char * fName) {
         fprintf(saida, "%.3lf %.3lf %.3lf\n", lista->coordenadas[0],
                                               lista->coordenadas[1],
                                               lista->coordenadas[2]);
+        lista = lista->next;
         quantidade_coordenadas--;
     }
     fclose(saida);
