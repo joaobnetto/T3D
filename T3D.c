@@ -5,7 +5,7 @@
 
 #ifndef T3T_H
 #define T3D_H
-#define to_degrees(angulo) (angulo*M_PI) / 180.0 
+#define to_degrees(angulo) (angulo*M_PI) / 180.0
 
 struct mat4x1 {
     // respectivamente x, y, z, t
@@ -35,7 +35,7 @@ Mat4x4 Escala(Mat4x4 M, double FX, double FY, double FZ);
 
 
 /* Preenche uma matriz 4x4 com os parâmetros de rotação */
-Mat4x4 Rot(Mat4x4 M, int eixo, double angulo);
+Mat4x4 Rot(Mat4x4 M, char eixo, double angulo);
 
 
 /* Multiplica duas matrizes 4x4, para composição de transformações */
@@ -43,7 +43,7 @@ Mat4x4 MatComp(Mat4x4 M1, Mat4x4 M2);
 
 
 /* Multiplica uma matriz 4x4 por um vetor de coordenad as, efetuando a transformação */
-Mat4x1 MatTransf(Mat4x1 * Obj, Mat4x1 P);
+Mat4x1 MatTransf(Mat4x4 M, Mat4x1 P);
 
 
 /* Imprime as coordenadas de um objeto no arquivo de nome fName */
@@ -61,7 +61,8 @@ void add_node(Mat4x1 * head, Mat4x1 dados);
 #endif
 
 int main() {
-    char nome_arquivo_entrada[] = "entrada.txt", nome_arquivo_saida[] = "saida.txt", comando, eixo, op;
+    char nome_arquivo_entrada[] = "entrada.txt";
+    char nome_arquivo_saida[] = "saida.txt", comando, eixo, op;
   	double graus, x, y, z;
     FILE * arquivo_entrada, * arquivo_saida;
     Mat4x1 * coordenadas = NULL;
@@ -101,15 +102,14 @@ void Cria(Mat4x1 * Obj, char * fName) {
   	}
   	fscanf(entrada, " %d", &quantidade);
   	while(quantidade) {
-      	fscanf(" %lf %lf %lf",
+      	fscanf(entrada, " %lf %lf %lf",
                &leitura.coordenadas[0],
                &leitura.coordenadas[1],
-               &leitura.coordenadas[2],
-               );
+               &leitura.coordenadas[2]);
       	leitura.coordenadas[3] = 1;
       	quantidade--;
   	}
-  	add_node(obj, leitura);
+  	add_node(Obj, leitura);
   	fclose(entrada);
 }
 
@@ -126,7 +126,6 @@ Mat4x4 Trans(Mat4x4 M, double deltaX, double deltaY, double deltaZ) {
   	tmp = MatComp(M, tmp);
   	// Retorno a nova matriz com os valores.
   	return tmp;
-    
 }
 Mat4x4 Escala(Mat4x4 M, double FX, double FY, double FZ) {
 	// memset: O(n)
@@ -188,7 +187,6 @@ Mat4x4 MatComp(Mat4x4 M1, Mat4x4 M2) {
 
 
 Mat4x1 MatTransf(Mat4x4 M, Mat4x1 P) {
-  	
   	int i, j;
   	Mat4x1 temp;
   	for(i = 0; i < 4; i++) {
@@ -235,7 +233,7 @@ void add_node(Mat4x1 * head, Mat4x1 dados) {
   	while(temp->next != NULL) {
     	temp = temp->next;
     }
-  	temp->next = (Mat4x1) malloc(sizeof(Mat4x1));
+  	temp->next = (Mat4x1 *) malloc(sizeof(Mat4x1));
   	temp = temp->next;
   	(*temp) = dados;
   	temp->next = NULL;
